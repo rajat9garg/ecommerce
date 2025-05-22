@@ -1,0 +1,17 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/test_ecommerce
+    username: postgres
+    password: postgres
+
+  flyway:
+    url: jdbc:postgresql://localhost:5432/test_ecommerce
+    user: postgres
+    password: postgres
+    locations: classpath:db/migration
+
+logging:
+  level:
+    root: WARN
+    '[org.springframework]': WARN
+    '[learn.ai.ecommerce]': DEBUG
