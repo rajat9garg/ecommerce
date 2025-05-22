@@ -30,12 +30,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
     
     // Database
-    implementation("org.postgresql:r2dbc-postgresql")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-core")
-    implementation("io.r2dbc:r2dbc-pool")
     
     // Redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("io.lettuce:lettuce-core:6.2.6.RELEASE")
     
     // Kotlin
@@ -51,18 +51,12 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
-    testImplementation("io.projectreactor:reactor-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
-    testImplementation("io.r2dbc:r2dbc-h2")
-    testImplementation("com.h2database:h2")
-    testImplementation("org.testcontainers:testcontainers:1.19.7")
-    testImplementation("org.testcontainers:junit-jupiter:1.19.7")
-    testImplementation("org.testcontainers:postgresql:1.19.7")
-    testImplementation("org.testcontainers:r2dbc:1.19.7")
-    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("org.testcontainers:postgresql:1.19.3")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.3")
+    testImplementation("org.testcontainers:testcontainers:1.19.3")
+    testImplementation("org.testcontainers:redis:1.19.3")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
     testImplementation("com.ninja-squad:springmockk:4.0.2")
-    testImplementation("org.awaitility:awaitility:4.2.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

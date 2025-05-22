@@ -2,6 +2,30 @@
 
 ## Core Entities
 
+### User
+```mermaid
+erDiagram
+    USER ||--o{ USER_AUTH : has
+    USER {
+        uuid id PK
+        string email
+        string phone_number
+        string status
+        timestamp created_at
+        timestamp last_login_at
+        timestamp updated_at
+    }
+    
+    USER_AUTH {
+        uuid id PK
+        uuid user_id FK
+        string auth_type
+        string auth_id
+        json auth_data
+        timestamp created_at
+    }
+```
+
 ### 1. Product
 ```mermaid
 erDiagram
@@ -55,8 +79,23 @@ erDiagram
 
 ## Data Access Patterns
 
+### User Management
+1. **User Operations**:
+   - Find user by email/phone
+   - Check if email/phone exists
+   - Get user profile
+   - List users with pagination
+   - Search users by criteria
+
+### Authentication
+1. **Auth Operations**:
+   - Create/update auth methods
+   - Verify credentials
+   - Manage sessions
+   - Handle password resets
+
 ### Read Patterns
-1. **Product Catalog**:
+1. **Product Catalog`:
    - Get product by ID
    - List products by category
    - Search products with filters

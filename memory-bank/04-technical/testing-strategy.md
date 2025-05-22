@@ -1,32 +1,74 @@
 # Testing Strategy
 
-## Testing Pyramid
-```
-          UI Tests (10%)
-        /               \
-       /                 \
-   API Tests           E2E Tests
-   (30%)                (10%)
-     |                    |
-     |                    |
-     +---------+----------+
-              |
-       Unit Tests (50%)
-```
+## Testing Strategy
 
-## Unit Testing
+### Focus Areas
+1. **Service Layer Testing (70%)**
+   - Business logic
+   - Transaction management
+   - Error handling
+   - Data validation
 
-### Scope
-- Individual functions and methods
-- Pure business logic
-- Utility functions
-- Service layer logic
+2. **Repository Layer (20%)**
+   - Custom queries
+   - Data mapping
+   - Transaction boundaries
+
+3. **API Layer (10%)**
+   - Request/response handling
+   - Error responses
+   - Input validation
 
 ### Tools
 - **Framework**: JUnit 5
-- **Mocking**: MockK
+- **Mocking**: Mockito-Kotlin
 - **Assertions**: AssertJ
+- **Database**: H2 for fast in-memory testing
 - **Coverage**: JaCoCo (min 80% line coverage)
+
+## Service Layer Testing
+
+### Key Aspects
+- Test business logic in isolation
+- Mock external dependencies (database, cache, etc.)
+- Focus on edge cases and error scenarios
+- Test transaction boundaries
+- Verify proper error handling and logging
+
+### Example: User Service Test
+```kotlin
+@ExtendWith(MockKExtension::class)
+class UserServiceTest {
+    
+    @MockK
+    private lateinit var userRepository: UserRepository
+    
+    @MockK
+    private lateinit var redisClient: RedisClient
+    
+    private lateinit var userService: UserService
+    
+    @BeforeEach
+    fun setup() {
+        MockKAnnotations.init(this)
+        userService = UserService(userRepository, redisClient)
+    }
+    
+    @Test
+    fun `createUser should save user when email is unique`() {
+        // Given
+        val request = CreateUserRequest("test@example.com", "+1234567890")
+        every { userRepository.existsByEmail(any()) } returns false
+        every { userRepository.save(any()) } returnsArgument 0
+        
+        // When
+        val result = userService.createUser(request)
+        
+        // Then
+        assertThat(result.email).isEqualTo("test@example.com")
+        verify { userRepository.save(any()) }
+    }
+}
 
 ### Example: Product Service Test
 ```kotlin
@@ -57,18 +99,41 @@ class ProductServiceTest {
 }
 ```
 
-## Integration Testing
+## Repository Layer Testing
 
-### Scope
-- API endpoints
-- Database interactions
-- External service integrations
+### Key Aspects
+- Test database interactions
+- Verify SQL queries and their results
+- Test transaction behavior
+- Use H2 for fast in-memory testing
+- Verify proper exception handling
 
-### Tools
-- **Framework**: Spring Boot Test
-- **Containers**: Testcontainers
-- **Database**: Testcontainers with PostgreSQL
-- **Mocking**: MockMvc for web layer
+### Example: User Repository Test
+```kotlin
+@DataJpaTest
+class UserRepositoryTest {
+    
+    @Autowired
+    private lateinit var entityManager: TestEntityManager
+    
+    @Autowired
+    private lateinit var userRepository: UserRepository
+    
+    @Test
+    fun `findByEmail should return user when exists`() {
+        // Given
+        val user = User(email = "test@example.com", phoneNumber = "+1234567890")
+        entityManager.persist(user)
+        entityManager.flush()
+        
+        // When
+        val found = userRepository.findByEmail("test@example.com")
+        
+        // Then
+        assertThat(found).isPresent
+        assertThat(found.get().email).isEqualTo("test@example.com")
+    }
+}
 
 ### Example: Product Controller Test
 ```kotlin
@@ -97,7 +162,94 @@ class ProductControllerIntegrationTest {
 }
 ```
 
-## End-to-End Testing
+## API Layer Testing
+
+### Key Aspects
+- Test API contracts
+- Verify HTTP status codes
+- Test input validation
+- Verify error responses
+- Test security constraints
+
+### Example: User Controller Test
+```kotlin
+@WebMvcTest(UserController::class)
+class UserControllerTest {
+    
+    @Autowired
+    private lateinit var mockMvc: MockMvc
+    
+    @MockkBean
+    private lateinit var userService: UserService
+    
+    @Test
+    fun `createUser should return 201 when request is valid`() {
+        // Given
+        val request = """
+            {
+                "email": "test@example.com",
+                "phoneNumber": "+1234567890"
+            }
+        """.trimIndent()
+        
+        every { userService.createUser(any()) } returns UserResponse(
+            id = "1",
+            email = "test@example.com",
+            status = "ACTIVE"
+        )
+        
+        // When/Then
+        mockMvc.perform(
+            post("/api/v1/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request)
+        )
+            .andExpect(status().isCreated)
+            .andExpect(jsonPath("$.email").value("test@example.com"))
+    }
+}
+
+## Test Data Management
+
+### Test Data Factories
+- Use a `TestDataFactory` to create test objects
+- Include both valid and edge case data
+- Make test data reusable across tests
+
+### Example Test Data Factory
+```kotlin
+object TestDataFactory {
+    fun createUser(
+        id: String = UUID.randomUUID().toString(),
+        email: String = "test@example.com",
+        phoneNumber: String = "+1234567890",
+        status: UserStatus = UserStatus.ACTIVE
+    ): User {
+        return User(
+            id = id,
+            email = email,
+            phoneNumber = phoneNumber,
+            status = status,
+            createdAt = Instant.now(),
+            lastLoginAt = null
+        )
+    }
+}
+```
+
+## Test Execution
+
+### Local Development
+- Run unit tests on every build
+- Run integration tests before pushing code
+- Use `./gradlew test` to run all tests
+- Use `./gradlew test --tests "*.integration.*"` for integration tests
+
+### CI/CD Pipeline
+- Run all tests on every push
+- Fail build if test coverage is below threshold
+- Generate test reports
+- Track test execution time and flakiness
 
 ### Scope
 - Complete user flows

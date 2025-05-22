@@ -1,12 +1,15 @@
 spring:
-  r2dbc:
-    url: r2dbc:postgresql://localhost:5432/ecommerce
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecommerce
     username: postgres
     password: postgres
-    pool:
-      initial-size: 2
-      max-size: 10
-      max-idle-time: 30m
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 20000
+      maximum-pool-size: 10
+      minimum-idle: 2
+      max-lifetime: 1800000
+      idle-timeout: 30000
 
   webflux:
     base-path: /api/v1

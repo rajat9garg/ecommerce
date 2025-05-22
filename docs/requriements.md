@@ -93,8 +93,11 @@ IGNORE THIS
 
 This detailed breakdown will give the coding agent a much clearer roadmap and allow them to start implementation with a stronger understanding of your vision.
 
+
+learnings to be used in the future
 1. Follow the current project structure
 2. Create clients for the new technologies and integrate with the database layer
 3. skip the testing of redis and database and controllers and just write test cases for service layer
 4. use synchronous library and not reactive for database and other libraries.
 5. Defining the libraries to use for clients will help
+6. Define the Database layer and its structure

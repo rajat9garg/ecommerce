@@ -16,9 +16,24 @@
 
 ### Database
 - **Primary**: PostgreSQL 14
-- **Cache**: Redis 7
-- **Search**: Elasticsearch 8.x
-- **Message Broker**: RabbitMQ 3.11
+  - Synchronous access using JDBC (Spring Data JDBC)
+  - Connection pooling with HikariCP
+  - Flyway for database migrations
+  - Custom DatabaseClient wrapper for common operations
+  - BaseRepository abstract class for CRUD operations
+
+### Caching
+- **Redis 7**
+  - Synchronous Redis client using Lettuce
+  - Custom RedisClient wrapper for simplified operations
+  - Distributed locking mechanism with LockService
+  - Connection pooling and retry mechanisms
+
+### Search
+- **Elasticsearch 8.x**
+
+### Message Broker
+- **RabbitMQ 3.11**
 
 ### Infrastructure
 - **Containerization**: Docker, Docker Compose
