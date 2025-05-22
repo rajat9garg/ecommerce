@@ -1,0 +1,17 @@
+HealthResponse:
+  type: object
+  required:
+    - status
+  properties:
+    status:
+      type: string
+      enum: [UP, DOWN]
+      example: "UP"
+      description: Current health status of the service
+    details:
+      type: object
+      additionalProperties: true
+      description: Additional health details
+      example:
+        db: "UP"
+        diskSpace: "UP"

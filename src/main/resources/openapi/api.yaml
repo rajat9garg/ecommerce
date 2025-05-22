@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: E-commerce Platform API
+  description: Health check endpoint for the E-commerce Platform
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@ecommerce.example.com
+  license:
+    name: Proprietary
+
+servers:
+  - url: /api/v1
+    description: API server
+
+# API Components
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [UP, DOWN]
+          example: "UP"
+          description: Current health status of the service
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional health details
+          example:
+            db: "UP"
+            diskSpace: "UP"
+
+  responses:
+    HealthResponse:
+      description: Health check response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HealthResponse'
+
+# API Endpoints
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns 200 OK if the service is running properly
+      operationId: healthCheck
+      tags:
+        - Health
+      responses:
+        '200':
+          $ref: '#/components/responses/HealthResponse'
