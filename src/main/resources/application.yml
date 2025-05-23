@@ -1,8 +1,11 @@
 spring:
+  application:
+    name: ecommerce-service
+  
   datasource:
-    url: jdbc:postgresql://localhost:5432/ecommerce
-    username: postgres
-    password: postgres
+    url: ${db.url:jdbc:postgresql://localhost:5432/ecommerce}
+    username: ${db.username:postgres}
+    password: ${db.password:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 20000
@@ -10,21 +13,44 @@ spring:
       minimum-idle: 2
       max-lifetime: 1800000
       idle-timeout: 30000
+      pool-name: HikariCP
+      auto-commit: true
+      initialization-fail-timeout: 1
+      validation-timeout: 3000
+      leak-detection-threshold: 0
 
-  webflux:
-    base-path: /api/v1
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        'format_sql': true
+        jdbc:
+          lob:
+            'non_contextual_creation': true
+
+  # Database initialization is handled by Flyway
+  sql:
+    init:
+      mode: never
 
   flyway:
     enabled: true
-    url: jdbc:postgresql://localhost:5432/ecommerce
-    user: postgres
-    password: postgres
+    url: ${db.url:jdbc:postgresql://localhost:5432/ecommerce}
+    user: ${db.username:postgres}
+    password: ${db.password:postgres}
     locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    clean-disabled: true
     
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${redis.host:localhost}
+      port: ${redis.port:6379}
       timeout: 5000
       lettuce:
         pool:
@@ -33,11 +59,57 @@ spring:
           min-idle: 0
           max-wait: -1ms
 
+# JOOQ Configuration (these properties will be used by JOOQ configuration in build.gradle.kts)
+'jooq':
+  'sql-dialect': 'POSTGRES'
+  sql:
+    render:
+      'name-case': 'LOWER_IF_UNQUOTED'
+      quoted: false
+      schema: 'public'
+      'render-schema': false
+      'render-formatted': false
+
+# Logging Configuration
 logging:
   level:
     root: INFO
-    '[org.springframework]': INFO
-    '[learn.ai.ecommerce]': DEBUG
+    org:
+      springframework: INFO
+      jooq: WARN
+      flyway: INFO
+    com.ecommerce: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/application.log
+    max-size: 100MB
+    max-history: 7
+    total-size-cap: 1GB
 
+# Server Configuration
 server:
   port: 8080
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+# Application Properties (custom properties)
+'app':
+  'api':
+    'version': 'v1'
+    'title': 'E-commerce API'
+    'description': 'E-commerce Platform API Documentation'
+    'contact':
+      'name': 'API Support'
+      'email': 'support@ecommerce.com'
+      'url': 'https://ecommerce.com/support'
+    'license':
+      'name': 'Proprietary'
+      'url': 'https://ecommerce.com/license'
+  'cache':
+    'ttl': 3600
+    'enabled': true
